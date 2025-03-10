@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .color-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .color-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid gray;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-rows: repeat(20, 20px);
+            grid-template-columns: repeat(20, 20px);
+            gap: 1px;
+        }
+
+        .grid-cell {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+                <circle cx="32" cy="32" r="30" fill="#BAE1FF" />
+                <circle cx="32" cy="32" r="24" fill="#BAFFC9" />
+                <circle cx="32" cy="32" r="18" fill="#FFFFBA" />
+                <circle cx="32" cy="32" r="12" fill="#FFDFBA" />
+                <circle cx="32" cy="32" r="6" fill="#FFB3BA" />
+            </svg>
+            <span style="font-size: 24px; font-weight: bold;">Color Game</span>
+        </div>
+        <div class="color-buttons">
+            <button class="color-button" style="background-color: #FFB3BA;"
+                onclick="handleButtonClick('#FFB3BA')"></button>
+            <button class="color-button" style="background-color: #FFDFBA;"
+                onclick="handleButtonClick('#FFDFBA')"></button>
+            <button class="color-button" style="background-color: #FFFFBA;"
+                onclick="handleButtonClick('#FFFFBA')"></button>
+            <button class="color-button" style="background-color: #BAFFC9;"
+                onclick="handleButtonClick('#BAFFC9')"></button>
+            <button class="color-button" style="background-color: #BAE1FF;"
+                onclick="handleButtonClick('#BAE1FF')"></button>
+        </div>
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <script>
+        const pastelColors = ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF"];
+        const grid = Array.from({ length: 20 }, () =>
+            Array.from({ length: 20 }, () => pastelColors[Math.floor(Math.random() * pastelColors.length)])
+        );
+
+        function renderGrid() {
+            const gridContainer = document.getElementById('grid');
+            gridContainer.innerHTML = '';
+            grid.forEach((row, rowIndex) => {
+                row.forEach((color, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.style.backgroundColor = color;
+                    gridContainer.appendChild(cell);
+                });
+            });
+        }
+
+        function handleButtonClick(color) {
+            const newGrid = copy(grid);
+            const currentColor = newGrid[0][0];
+            if (currentColor !== color) {
+                floodFill(newGrid, 0, 0, currentColor, color);
+                grid.length = 0;
+                newGrid.forEach(row => grid.push(row));
+                renderGrid();
+            }
+        }
+
+        function copy(grid) {
+            return grid.map(row => row.slice());
+        }
+
+        function floodFill(gr, x, y, currentColor, replacementColor) {
+            if (x < 0 || x >= gr.length || y < 0 || y >= gr[0].length) {
+                return;
+            }
+            if (gr[x][y] !== currentColor) {
+                return;
+            }
+            gr[x][y] = replacementColor;
+            floodFill(gr, x + 1, y, currentColor, replacementColor);
+            floodFill(gr, x - 1, y, currentColor, replacementColor);
+            floodFill(gr, x, y + 1, currentColor, replacementColor);
+            floodFill(gr, x, y - 1, currentColor, replacementColor);
+        }
+
+        document.addEventListener('DOMContentLoaded', renderGrid);
+    </script>
+</body>
+
+</html>
