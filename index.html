@@ -142,6 +142,7 @@
         const pastelColors = ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF"];
         let grid = [];
         let steps = 0;
+        let gameWon = false;
 
         function renderGrid() {
             const gridContainer = document.getElementById('grid');
@@ -157,6 +158,8 @@
         }
 
         function handleButtonClick(color) {
+            if (gameWon) return;
+
             const newGrid = copy(grid);
             const currentColor = newGrid[0][0];
             if (currentColor !== color) {
@@ -167,6 +170,7 @@
                 steps++;
                 saveProgress();
                 if (checkWin()) {
+                    gameWon = true;
                     displayWinMessage();
                 }
             }
@@ -197,7 +201,15 @@
 
         function displayWinMessage() {
             const winMessage = document.getElementById('winMessage');
-            winMessage.textContent = `You won in ${steps} steps!`;
+            const bestScore = localStorage.getItem('bestScore');
+            const currentScore = steps;
+
+            if (!bestScore || currentScore < parseInt(bestScore)) {
+                localStorage.setItem('bestScore', currentScore);
+                winMessage.textContent = `New best score: ${currentScore} steps!`;
+            } else {
+                winMessage.textContent = `You won in ${currentScore} steps! Best score: ${bestScore}`;
+            }
             winMessage.style.display = 'block';
         }
 
@@ -222,6 +234,7 @@
                 Array.from({ length: 20 }, () => pastelColors[Math.floor(Math.random() * pastelColors.length)])
             );
             steps = 0;
+            gameWon = false;
             saveProgress();
             renderGrid();
             document.getElementById('winMessage').style.display = 'none';
