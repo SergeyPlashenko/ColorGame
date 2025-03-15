@@ -52,11 +52,53 @@
             grid-template-rows: repeat(20, 20px);
             grid-template-columns: repeat(20, 20px);
             gap: 1px;
+            margin-bottom: 20px;
         }
 
         .grid-cell {
             width: 20px;
             height: 20px;
+        }
+
+        .win-message {
+            font-size: 24px;
+            font-weight: bold;
+            color: green;
+            margin-top: 20px;
+            display: none;
+            animation: celebrate 1s ease-in-out infinite;
+        }
+
+        .refresh-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid gray;
+            background-color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto 0;
+        }
+
+        .refresh-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        @keyframes celebrate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -86,13 +128,20 @@
                 onclick="handleButtonClick('#BAE1FF')"></button>
         </div>
         <div class="grid" id="grid"></div>
+        <div class="win-message" id="winMessage"></div>
+        <button class="refresh-button" onclick="resetGame()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" stroke-width="2"
+                    d="M20 8c-1.4-2.8-4.3-4.8-7.7-4.8C7.2 3.2 3.2 7.2 3.2 12c0 4.8 4 8.8 8.8 8.8 3.8 0 7.1-2.4 8.3-5.8" />
+                <path fill="none" stroke="currentColor" stroke-width="2" d="M20 2v6h-6" />
+            </svg>
+        </button>
     </div>
 
     <script>
         const pastelColors = ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF"];
-        const grid = Array.from({ length: 20 }, () =>
-            Array.from({ length: 20 }, () => pastelColors[Math.floor(Math.random() * pastelColors.length)])
-        );
+        let grid = [];
+        let steps = 0;
 
         function renderGrid() {
             const gridContainer = document.getElementById('grid');
@@ -115,6 +164,11 @@
                 grid.length = 0;
                 newGrid.forEach(row => grid.push(row));
                 renderGrid();
+                steps++;
+                saveProgress();
+                if (checkWin()) {
+                    displayWinMessage();
+                }
             }
         }
 
@@ -136,7 +190,47 @@
             floodFill(gr, x, y - 1, currentColor, replacementColor);
         }
 
-        document.addEventListener('DOMContentLoaded', renderGrid);
+        function checkWin() {
+            const firstColor = grid[0][0];
+            return grid.every(row => row.every(color => color === firstColor));
+        }
+
+        function displayWinMessage() {
+            const winMessage = document.getElementById('winMessage');
+            winMessage.textContent = `You won in ${steps} steps!`;
+            winMessage.style.display = 'block';
+        }
+
+        function saveProgress() {
+            localStorage.setItem('grid', JSON.stringify(grid));
+            localStorage.setItem('steps', steps);
+        }
+
+        function loadProgress() {
+            const savedGrid = localStorage.getItem('grid');
+            const savedSteps = localStorage.getItem('steps');
+            if (savedGrid && savedSteps) {
+                grid = JSON.parse(savedGrid);
+                steps = parseInt(savedSteps, 10);
+            } else {
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            grid = Array.from({ length: 20 }, () =>
+                Array.from({ length: 20 }, () => pastelColors[Math.floor(Math.random() * pastelColors.length)])
+            );
+            steps = 0;
+            saveProgress();
+            renderGrid();
+            document.getElementById('winMessage').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            renderGrid();
+        });
     </script>
 </body>
 
